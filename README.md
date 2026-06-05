@@ -61,3 +61,19 @@ Jalanin test suite biar kelihatan nerapin TDD padahal copas sana sini:
 ```bash
 bun test
 ```
+
+## Deployment ke Render (Biar jalan gratisan tapi hemat kuota)
+
+Daripada bayar $7 per bulan buat background worker, mending kita deploy sebagai **Web Service** gratisan di Render. Biar Render kaga rewel minta port binding, aplikasi ini udah otomatis ngebuka server HTTP di port `3000` (atau port dinamis dari Render lewat env `PORT`) dengan endpoint health check di `/health` atau `/`.
+
+Tapi inget, Render gratisan bakal otomatis tidur (turu) kalo ga ada request masuk selama 15 menit. Biar bot tetep jalan pas jam kuliah tapi ga ngabisin kuota jam gratisan Render pas malem (19:00 - 04:30 WIB), ikutin trik akal-akalan ini:
+
+1. Buat akun gratis di **Cron-job.org** (jangan pake UptimeRobot karena ga bisa dijadwal jamnya).
+2. Set zona waktu (timezone) akun/job lu ke **Asia/Jakarta** (WIB).
+3. Buat dua (2) cron job yang mengarah ke URL health check web service Render lu (misal: `https://bemo-bot.onrender.com/health`):
+   - **Job 1 (Membangunkan bot pagi-pagi, jam 04:30 - 04:55 WIB):**
+     - Jadwal Cron: `30,35,40,45,50,55 4 * * *`
+   - **Job 2 (Mantau sepanjang hari, jam 05:00 - 18:55 WIB):**
+     - Jadwal Cron: `*/5 5-18 * * *`
+4. Di luar jam itu (19:00 - 04:30 WIB), pinger bakal libur nembak. Setelah 15 menit tanpa request (sekitar jam 19:15 WIB), kontainer Render lu bakal otomatis tidur nyenyak. Pagi harinya jam 04:30 WIB, ping pertama bakal bangunin dia lagi (butuh waktu bangun sekitar 1 menitan). Lumayan hemat kuota, kan?
+
