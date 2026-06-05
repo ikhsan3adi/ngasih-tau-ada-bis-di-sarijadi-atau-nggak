@@ -1,0 +1,18 @@
+{
+  "name": "ngasih-tau-ada-bis-di-sarijadi-atau-nggak",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@turf/boolean-point-in-polygon": "^7.3.5"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.8.3"
+  }
+}
