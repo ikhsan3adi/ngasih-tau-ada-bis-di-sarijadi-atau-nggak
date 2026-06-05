@@ -2,7 +2,7 @@
 
 Skrip kurang kerjaan buat mantau posisi bis dan spam notif Telegram pas ada bis yang masuk atau keluar area geofence. 
 
-Latar belakangnya gini: Gua bikin ini murni karena capek jadi korban ghosting bis pas pulang kuliah. Nungguin bis di daerah Sarijadi, Cibogo, Surya Sumantri atau Sukawarna tuh kayak nungguin kepastian dari gebetan, nggak jelas kapan datengnya. Daripada kaki pegel berdiri di pinggir jalan dan ngerasa jadi anak kosan paling merana se-Bandung gara-gara ketinggalan bis, mending gua bikin bot aja biar server yang nungguin. Sekalian pamer ke circle lu lah kalo lu bisa ngoding.
+Latar belakangnya gini: Gua bikin ini murni karena capek jadi korban ghosting bis pas pulang kuliah. Nungguin bis di daerah Sarijadi, Cibogo, Surya Sumantri atau Sukawarna tuh kayak nungguin kepastian dari gebetan, nggak jelas kapan datengnya. Berbekal skill reverse engineering tingkat dewa (baca: inspect element endpoint API BEMO asli), akhirnya jadilah bot ini biar server yang nungguin bis. Sekalian pamer ke circle lu lah kalo lu bisa ngoding hal-hal canggih gini.
 
 ## Fitur
 
@@ -24,7 +24,12 @@ Bikin file `.env` di root directory. Isinya ginian:
 
 - `TELEGRAM_BOT_TOKEN`: Token bot lu yang gampang dibobol itu.
 - `TELEGRAM_CHAT_ID`: ID chat tempat lu mau pamer notif.
-- `BEMO_API_URL`: URL API buat ngambil posisi bis. Kalo nanya dapet dari mana, reverse engineering lah banh.
+- `PORT`: Port buat HTTP server biar Render ga rewel (default `3000`).
+- `POLL_INTERVAL_SEC`: Jeda waktu polling dalam detik (default `60`).
+- `SLEEP_START_HOUR`: Jam mulai tidur WIB (default `19`).
+- `SLEEP_END_HOUR`: Jam selesai tidur WIB (default `5`).
+- `SLEEP_INTERVAL_SEC`: Durasi loop pas mode tidur, biar ga boros request (default `3600`).
+- `BYPASS_SLEEP_MODE`: Set `true` kalo bot lu mau begadang 24 jam nonstop tanpa kenal lelah.
 
 ## Cara Install (Kalo lu gak paham mending turu)
 
