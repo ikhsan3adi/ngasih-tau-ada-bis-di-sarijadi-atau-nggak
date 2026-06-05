@@ -2,7 +2,7 @@
 
 Skrip kurang kerjaan buat mantau posisi bis dan spam notif Telegram pas ada bis yang masuk atau keluar area geofence. 
 
-Latar belakangnya gini ngab: Gua bikin ini murni karena capek jadi korban ghosting bis pas pulang kuliah. Nungguin bis di daerah Sarijadi, Cibogo, atau Sukawarna tuh kayak nungguin kepastian dari gebetan, nggak jelas kapan datengnya. Daripada kaki pegel berdiri di pinggir jalan dan ngerasa jadi anak kosan paling merana se-Bandung gara-gara ketinggalan bis, mending gua bikin bot aja biar server yang nungguin. Sekalian pamer ke circle lu lah kalo lu bisa ngoding.
+Latar belakangnya gini: Gua bikin ini murni karena capek jadi korban ghosting bis pas pulang kuliah. Nungguin bis di daerah Sarijadi, Cibogo, Surya Sumantri atau Sukawarna tuh kayak nungguin kepastian dari gebetan, nggak jelas kapan datengnya. Daripada kaki pegel berdiri di pinggir jalan dan ngerasa jadi anak kosan paling merana se-Bandung gara-gara ketinggalan bis, mending gua bikin bot aja biar server yang nungguin. Sekalian pamer ke circle lu lah kalo lu bisa ngoding.
 
 ## Fitur
 
@@ -14,7 +14,7 @@ Latar belakangnya gini ngab: Gua bikin ini murni karena capek jadi korban ghosti
 
 ## Modal Biar Bisa Jalan
 
-- Bun (kalo masih pake Node.js lu kurang edgy ngab).
+- Bun (kalo masih pake Node.js lu kurang edgy).
 - Token Bot Telegram (bikin sendiri di BotFather, jangan manja).
 - Chat ID Telegram (buat nampung spam).
 
