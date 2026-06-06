@@ -6,7 +6,8 @@
     "start": "bun run src/index.ts",
     "test": "bun test",
     "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "visualize": "bun run src/visualizer/server.ts"
   },
   "dependencies": {
     "@turf/boolean-point-in-polygon": "^7.3.5"

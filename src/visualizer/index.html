@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualizer Realtime</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space%20Grotesk:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Turf.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Space Grotesk', sans-serif;
+      }
+
+      body,
+      html {
+        height: 100%;
+        width: 100%;
+        background-color: #0f172a;
+        color: #f8fafc;
+        overflow: hidden;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+      }
+
+      /* Glassmorphism Sidebar */
+      .dashboard {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 360px;
+        max-height: calc(100% - 40px);
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        z-index: 1000;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.5),
+          0 10px 10px -5px rgba(0, 0, 0, 0.4);
+        overflow-y: auto;
+        transition: all 0.3s ease;
+      }
+
+      .dashboard::-webkit-scrollbar {
+        width: 6px;
+      }
+      .dashboard::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 16px;
+      }
+
+      header h1 {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        background: linear-gradient(to right, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .badge-live {
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        animation: pulse 1.5s infinite;
+        letter-spacing: 1px;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.5;
+        }
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #f8fafc;
+      }
+
+      .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .control-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #cbd5e1;
+      }
+
+      .btn-group {
+        display: flex;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .btn-toggle {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-toggle.active {
+        background: rgba(56, 189, 248, 0.2);
+        color: #38bdf8;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Bus List Area */
+      .bus-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .bus-list-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .bus-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+
+      .bus-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .bus-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .bus-item-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .bus-plate-label {
+        font-size: 13px;
+        font-weight: bold;
+        color: #f8fafc;
+      }
+
+      .bus-route-label {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+
+      .bus-badge {
+        font-size: 9px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+      }
+
+      /* Map Custom Styling */
+      .leaflet-popup-content-wrapper {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 6px !important;
+      }
+
+      .leaflet-popup-tip {
+        background: #0f172a !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .popup-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 200px;
+      }
+
+      .popup-header {
+        font-weight: bold;
+        font-size: 14px;
+        color: #38bdf8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .popup-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+      }
+
+      .popup-key {
+        color: #94a3b8;
+      }
+
+      .popup-val {
+        font-weight: 600;
+        color: #f8fafc;
+      }
+
+      .in-polygon-alert {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 4px;
+      }
+
+      /* Timer Area */
+      .timer-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+
+      .timer-progress {
+        height: 100%;
+        background: #38bdf8;
+        width: 100%;
+        transition: width 1s linear;
+      }
+
+      /* Map Markers custom layout */
+      .bus-marker-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        color: white;
+        font-weight: bold;
+        font-size: 11px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <header>
+        <h1><i class="fa-solid fa-bus"></i> Map</h1>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-label">Bus Aktif</span>
+          <span class="stat-value" id="active-count">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Auto Refresh</span>
+          <span class="stat-value" id="timer-text">10s</span>
+          <div class="timer-bar">
+            <div class="timer-progress" id="timer-progress"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <span class="control-label">Wilayah Geofence</span>
+        <div class="btn-group">
+          <button
+            class="btn-toggle active"
+            id="btn-polygons-default"
+            onclick="setPolygonMode(false)"
+          >
+            Default
+          </button>
+          <button
+            class="btn-toggle"
+            id="btn-polygons-test"
+            onclick="setPolygonMode(true)"
+          >
+            Test Bandung
+          </button>
+        </div>
+      </div>
+
+      <div class="bus-list-container">
+        <span class="bus-list-title">
+          Daftar Bus Terdeteksi
+          <span id="list-count" style="font-size: 11px; color: #cbd5e1"
+            >(0)</span
+          >
+        </span>
+        <div class="bus-list" id="bus-list">
+          <!-- Bus items dynamically generated -->
+        </div>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <script>
+      // Config & Map setup
+      const map = L.map('map', {
+        zoomControl: false,
+      }).setView([-6.904, 107.615], 13)
+
+      // Dark Mode Tiles (CartoDB Dark Matter)
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20,
+        },
+      ).addTo(map)
+
+      // Put zoom control in top right
+      L.control.zoom({ position: 'topright' }).addTo(map)
+
+      // Constants
+      const PLATE_REGEX = /[A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3}/
+
+      // State Variables
+      let isTestPolygon = false
+      let countdown = 10
+      let markers = {}
+      let polygonLayers = []
+      let polygonsData = {}
+      let buses = []
+      let PLATE_TO_KORIDOR = {}
+      let ROUTE_TO_JURUSAN = {}
+
+      // Helper functions
+      function cleanPlate(raw) {
+        const m = raw.toUpperCase().match(PLATE_REGEX)
+        return m ? m[0].replace(/\s+/g, ' ').trim() : null
+      }
+
+      function extractRoute(vehicleNo) {
+        const m = vehicleNo
+          .toUpperCase()
+          .match(
+            /(KORIDOR \d|FEEDER \d|BS KORIDOR \d|BANDROS(?:\s+[A-Z]+){1,2}|BANDROS|BOSEH)/,
+          )
+        return m ? m[1] : null
+      }
+
+      function getRouteColor(routeLabel) {
+        if (!routeLabel) return '#64748b' // Unknown (Abu-abu)
+        if (routeLabel.includes('KORIDOR 1')) return '#ef4444' // Merah
+        if (routeLabel.includes('KORIDOR 2')) return '#3b82f6' // Biru
+        if (routeLabel.includes('KORIDOR 3')) return '#22c55e' // Hijau
+        if (routeLabel.includes('KORIDOR 4')) return '#06b6d4' // Cyan
+        if (routeLabel.includes('KORIDOR 5')) return '#f59e0b' // Amber/Orange
+        if (routeLabel.includes('FEEDER')) return '#8b5cf6' // Ungu
+        if (routeLabel.includes('BS KORIDOR')) return '#eab308' // Kuning
+        if (routeLabel.includes('BANDROS')) return '#ec4899' // Pink/Bandros
+        return '#64748b'
+      }
+
+      function getInitials(routeLabel) {
+        if (!routeLabel) return '?'
+        if (routeLabel.includes('KORIDOR'))
+          return 'K' + routeLabel.split(' ').pop()
+        if (routeLabel.includes('FEEDER'))
+          return 'F' + routeLabel.split(' ').pop()
+        if (routeLabel.includes('BS KORIDOR'))
+          return 'BS' + routeLabel.split(' ').pop()
+        if (routeLabel.includes('BANDROS')) return 'B'
+        return '?'
+      }
+
+      // Toggle Polygons
+      function setPolygonMode(isTest) {
+        isTestPolygon = isTest
+        document
+          .getElementById('btn-polygons-default')
+          .classList.toggle('active', !isTest)
+        document
+          .getElementById('btn-polygons-test')
+          .classList.toggle('active', isTest)
+        loadPolygons()
+      }
+
+      // Fetch and draw polygons
+      async function loadPolygons() {
+        // Clear old polygons
+        polygonLayers.forEach((l) => map.removeLayer(l))
+        polygonLayers = []
+
+        try {
+          const res = await fetch(`/api/polygons?test=${isTestPolygon}`)
+          polygonsData = await res.json()
+
+          Object.entries(polygonsData).forEach(([name, coords]) => {
+            // Leaflet expects [lat, lng], which matches our json format!
+            // We must close the ring for drawing if it's not closed
+            const polygonCoords = [...coords]
+            if (
+              polygonCoords[0][0] !==
+                polygonCoords[polygonCoords.length - 1][0] ||
+              polygonCoords[0][1] !== polygonCoords[polygonCoords.length - 1][1]
+            ) {
+              polygonCoords.push(polygonCoords[0])
+            }
+
+            const polygon = L.polygon(polygonCoords, {
+              color: '#38bdf8',
+              fillColor: '#0ea5e9',
+              fillOpacity: 0.15,
+              weight: 2,
+              dashArray: '5, 5',
+            }).addTo(map)
+
+            polygon.bindTooltip(name, {
+              permanent: true,
+              direction: 'center',
+              className: 'polygon-tooltip',
+            })
+
+            polygonLayers.push(polygon)
+          })
+
+          // Auto adjust map bounds to cover polygons
+          if (polygonLayers.length > 0) {
+            const group = new L.featureGroup(polygonLayers)
+            map.fitBounds(group.getBounds().pad(0.1))
+          }
+        } catch (err) {
+          console.error('Gagal memuat poligon:', err)
+        }
+      }
+
+      // Check if point is inside a polygon using Turf.js
+      function checkGeofence(lat, lng) {
+        const point = turf.point([lng, lat]) // Turf expects [lng, lat]
+
+        for (const [name, coords] of Object.entries(polygonsData)) {
+          // Swap [lat, lng] to [lng, lat] for turf
+          const turfCoords = coords.map((c) => [c[1], c[0]])
+          if (
+            turfCoords[0][0] !== turfCoords[turfCoords.length - 1][0] ||
+            turfCoords[0][1] !== turfCoords[turfCoords.length - 1][1]
+          ) {
+            turfCoords.push(turfCoords[0])
+          }
+
+          const polygon = turf.polygon([turfCoords])
+          if (turf.booleanPointInPolygon(point, polygon)) {
+            return name
+          }
+        }
+        return null
+      }
+
+      // Fetch realtime data
+      async function updateData() {
+        try {
+          const [liveRes, tmbRes] = await Promise.all([
+            fetch('/api/live').then((r) => r.json().catch(() => null)),
+            fetch('/api/tmb').then((r) => r.json().catch(() => null)),
+          ])
+
+          const busMap = new Map()
+
+          // 1. Process Live Buses
+          const liveBuses = liveRes?.data?.result?.data || []
+          liveBuses.forEach((bus) => {
+            const { lat, lng } = bus.gps_position
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+            const rawPlate = (bus.vehicle_no || '').split(' - ')[0] || ''
+            const plate = cleanPlate(rawPlate)
+            const key = plate ? `PLATE:${plate}` : `VNO:${bus.vehicle_no}`
+
+            let routeLabel = extractRoute(bus.vehicle_no)
+            if (!routeLabel && plate) routeLabel = PLATE_TO_KORIDOR[plate]
+
+            busMap.set(key, {
+              key,
+              plate: plate || 'UNKNOWN',
+              vehicleNo: bus.vehicle_no,
+              routeLabel,
+              lat,
+              lng,
+              time: bus.gps_position.time,
+              source: 'live',
+            })
+          })
+
+          // 2. Process TMB Buses
+          const tmbBuses = tmbRes?.message?.data || []
+          tmbBuses.forEach((bus) => {
+            if (bus.is_expired) return
+
+            const plate = cleanPlate(bus.plate || bus.title || '')
+            const lat = parseFloat(bus.latitude)
+            const lng = parseFloat(bus.longitude)
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+            const key = plate ? `PLATE:${plate}` : `IMEI:${bus.imei}`
+
+            // Deduplicate
+            if (busMap.has(key) && busMap.get(key).source === 'live') return
+
+            let routeLabel = extractRoute(bus.title || '')
+            if (!routeLabel && plate) routeLabel = PLATE_TO_KORIDOR[plate]
+
+            busMap.set(key, {
+              key,
+              plate: plate || 'UNKNOWN',
+              vehicleNo: bus.title || plate || `TMB-${bus.imei}`,
+              routeLabel,
+              lat,
+              lng,
+              time: bus.time,
+              source: 'tmb',
+            })
+          })
+
+          buses = Array.from(busMap.values())
+          renderBuses()
+        } catch (err) {
+          console.error('Gagal update data bus:', err)
+        }
+      }
+
+      // Render markers on map and update sidebar
+      function renderBuses() {
+        // 1. Update Stats & Count
+        document.getElementById('active-count').innerText = buses.length
+        document.getElementById('list-count').innerText = `(${buses.length})`
+
+        // 2. Clear out unused markers
+        const currentKeys = new Set(buses.map((b) => b.key))
+        Object.keys(markers).forEach((key) => {
+          if (!currentKeys.has(key)) {
+            map.removeLayer(markers[key])
+            delete markers[key]
+          }
+        })
+
+        const listContainer = document.getElementById('bus-list')
+        listContainer.innerHTML = ''
+
+        // 3. Draw or Update markers
+        buses.forEach((bus) => {
+          const inPolygon = checkGeofence(bus.lat, bus.lng)
+          const color = getRouteColor(bus.routeLabel)
+          const initials = getInitials(bus.routeLabel)
+          const jurusan = bus.routeLabel
+            ? ROUTE_TO_JURUSAN[bus.routeLabel.toUpperCase().trim()] ||
+              'Rute Kota'
+            : 'Jurusan Tidak Diketahui'
+
+          // Add to Sidebar list
+          const busItem = document.createElement('div')
+          busItem.className = 'bus-item'
+          busItem.innerHTML = `
+          <div class="bus-item-left">
+            <span class="bus-plate-label">${bus.plate}</span>
+            <span class="bus-route-label">${bus.routeLabel || 'Unknown Route'}</span>
+          </div>
+          <span class="bus-badge" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40">
+            ${inPolygon ? 'GEOFENCE: ' + inPolygon : bus.routeLabel || 'Unknown'}
+          </span>
+        `
+          busItem.onclick = () => {
+            map.setView([bus.lat, bus.lng], 16)
+            markers[bus.key].openPopup()
+          }
+          listContainer.appendChild(busItem)
+
+          // Map marker HTML
+          const markerHtml = `<div class="bus-marker-icon" style="background-color: ${color}; width: 30px; height: 30px;">${initials}</div>`
+          const icon = L.divIcon({
+            html: markerHtml,
+            className: 'custom-div-icon',
+            iconSize: [30, 30],
+          })
+
+          const popupContent = `
+          <div class="popup-content">
+            <div class="popup-header" style="color: ${color}">
+              <span>${bus.plate}</span>
+              <span class="bus-badge" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40">${bus.source}</span>
+            </div>
+            <div class="popup-row">
+              <span class="popup-key">Rute:</span>
+              <span class="popup-val">${bus.routeLabel || 'Unknown'}</span>
+            </div>
+            <div class="popup-row">
+              <span class="popup-key">Jurusan:</span>
+              <span class="popup-val">${jurusan}</span>
+            </div>
+            <div class="popup-row">
+              <span class="popup-key">Koordinat:</span>
+              <span class="popup-val">${bus.lat.toFixed(5)}, ${bus.lng.toFixed(5)}</span>
+            </div>
+            <div class="popup-row">
+              <span class="popup-key">Update:</span>
+              <span class="popup-val">${bus.time || '-'}</span>
+            </div>
+            ${inPolygon ? `<div class="in-polygon-alert"><i class="fa-solid fa-location-dot"></i> Di dalam ${inPolygon}</div>` : ''}
+          </div>
+        `
+
+          if (markers[bus.key]) {
+            // Update existing marker
+            markers[bus.key].setLatLng([bus.lat, bus.lng])
+            markers[bus.key].setIcon(icon)
+            markers[bus.key].setPopupContent(popupContent)
+          } else {
+            // Create new marker
+            const marker = L.marker([bus.lat, bus.lng], { icon }).addTo(map)
+            marker.bindPopup(popupContent)
+            markers[bus.key] = marker
+          }
+        })
+      }
+
+      // Countdown / Polling Timer
+      function startTimer() {
+        const timerProgress = document.getElementById('timer-progress')
+        const timerText = document.getElementById('timer-text')
+
+        setInterval(() => {
+          countdown--
+          if (countdown <= 0) {
+            countdown = 10
+            updateData()
+          }
+          timerText.innerText = countdown + 's'
+          timerProgress.style.width = countdown * 10 + '%'
+        }, 1000)
+      }
+
+      // Init Page
+      ;(async function init() {
+        try {
+          const res = await fetch('/api/routes')
+          const routeConfig = await res.json()
+          PLATE_TO_KORIDOR = routeConfig.plateToKoridor
+          ROUTE_TO_JURUSAN = routeConfig.routeToJurusan
+        } catch (e) {
+          console.error('Gagal memuat konfigurasi rute:', e)
+        }
+        await loadPolygons()
+        await updateData()
+        startTimer()
+      })()
+    </script>
+  </body>
+</html>
