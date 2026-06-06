@@ -7,10 +7,12 @@ import {
   ChevronRight,
   Info,
   MapPin,
+  Menu,
   RefreshCw,
   Search,
   Wifi,
   WifiOff,
+  X,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import polygonsDefault from '../../polygons.json'
@@ -86,6 +88,7 @@ export default function App() {
   )
   const [selectedBusKey, setSelectedBusKey] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | 'geofence'>('all')
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false)
 
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -416,6 +419,7 @@ export default function App() {
       map.setView([bus.lat, bus.lng], 16, { animate: true, duration: 0.8 })
       marker.openPopup()
       setSelectedBusKey(bus.key)
+      setIsSidebarOpen(false)
     }
   }
 
@@ -434,8 +438,12 @@ export default function App() {
   const busesInGeofence = buses.filter((b) => b.geofence !== null)
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
-      <aside className="w-80 md:w-96 flex flex-col bg-slate-900/40 border-r border-slate-800/80 backdrop-blur-xl shrink-0 z-10">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100 relative">
+      <aside
+        className={`fixed inset-y-0 left-0 z-[9999] w-80 md:w-96 flex flex-col bg-slate-900/95 md:bg-slate-900/40 border-r border-slate-800/80 backdrop-blur-xl shrink-0 transition-transform duration-300 ease-in-out md:translate-x-0 md:relative ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <header className="p-5 border-b border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
@@ -470,6 +478,12 @@ export default function App() {
                 <WifiOff className="w-4 h-4" />
               </span>
             )}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 hover:bg-slate-800 rounded-md text-slate-400 hover:text-slate-200 md:hidden ml-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </header>
 
@@ -644,19 +658,37 @@ export default function App() {
         </footer>
       </aside>
 
-      <main className="flex-1 relative h-full">
+      {/* Backdrop overlay untuk mobile */}
+      {isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] md:hidden transition-opacity duration-300"
+        ></div>
+      )}
+
+      <main className="flex-1 relative h-full w-full">
         <div ref={mapContainerRef} className="w-full h-full"></div>
 
-        <div className="absolute top-4 left-4 z-[999] bg-slate-900/85 backdrop-blur-md border border-slate-800/80 px-3 py-2 rounded-xl flex items-center gap-2 shadow-2xl pointer-events-none">
-          <MapPin className="w-4 h-4 text-sky-400" />
-          <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">
-            {isTestMode
-              ? 'Mode: Bandung Raya (Test)'
-              : 'Mode: Sarijadi (Default)'}
+        {/* Floating Controls di kiri atas */}
+        <div className="absolute top-4 left-4 z-[1001] flex gap-2">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="md:hidden p-2.5 bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-xl text-slate-200 shadow-2xl hover:bg-slate-800 active:scale-95 transition-all"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
+          <div className="bg-slate-900/85 backdrop-blur-md border border-slate-800/80 px-3 py-2 rounded-xl flex items-center gap-2 shadow-2xl pointer-events-none">
+            <MapPin className="w-4 h-4 text-sky-400" />
+            <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wide">
+              {isTestMode
+                ? 'Mode: Bandung Raya (Test)'
+                : 'Mode: Sarijadi (Default)'}
+            </div>
           </div>
         </div>
 
-        <div className="absolute bottom-4 right-4 z-[999] bg-slate-900/85 backdrop-blur-md border border-slate-800/80 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide text-slate-200 shadow-2xl pointer-events-none">
+        <div className="absolute bottom-4 right-4 z-[1001] bg-slate-900/85 backdrop-blur-md border border-slate-800/80 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide text-slate-200 shadow-2xl pointer-events-none">
           &copy; {new Date().getFullYear()} ikhsan3adi
         </div>
       </main>
