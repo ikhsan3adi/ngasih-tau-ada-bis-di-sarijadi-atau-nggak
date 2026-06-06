@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { formatPolygonConsolidatedMessage } from './notifier'
-import type { StateEvent } from './state'
+import type { StateEvent } from './types'
 
 describe('Notifier Templates', () => {
   it('should format polygon consolidated summary messages correctly', () => {

@@ -1,8 +1,12 @@
 import { extractRoute, inferRouteFromPlate } from './routes'
 import type { BusData, RawLiveBus, RawTmbBus } from './types'
 
+const BEMO_LIVE_URL = 'https://bemo.uptangkutan-bandung.id/map/live'
+const BEMO_TMB_URL = 'https://bemo.uptangkutan-bandung.id/map/tmb/'
+const PLATE_REGEX = /[A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3}/
+
 function cleanPlate(raw: string): string | null {
-  const m = raw.toUpperCase().match(/[A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3}/)
+  const m = raw.toUpperCase().match(PLATE_REGEX)
   return m ? m[0].replace(/\s+/g, ' ').trim() : null
 }
 
@@ -38,8 +42,8 @@ interface TmbResponse {
 
 export async function fetchBemoData(): Promise<BusData[] | null> {
   const [liveRes, tmbRes] = await Promise.all([
-    fetchJson<LiveResponse>('https://bemo.uptangkutan-bandung.id/map/live'),
-    fetchJson<TmbResponse>('https://bemo.uptangkutan-bandung.id/map/tmb/'),
+    fetchJson<LiveResponse>(BEMO_LIVE_URL),
+    fetchJson<TmbResponse>(BEMO_TMB_URL),
   ])
 
   if (liveRes === null && tmbRes === null) return null

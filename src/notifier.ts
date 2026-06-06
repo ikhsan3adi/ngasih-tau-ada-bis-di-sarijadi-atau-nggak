@@ -1,6 +1,6 @@
 import { config } from './config'
 import { enrichRoute } from './routes'
-import type { StateEvent } from './state'
+import type { StateEvent } from './types'
 
 const TELEGRAM_API = 'https://api.telegram.org/bot'
 

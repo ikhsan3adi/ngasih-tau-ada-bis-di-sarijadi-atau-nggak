@@ -1,11 +1,4 @@
-import type { BusData, PolygonDef, Transition } from './types'
-import type { BusEvaluation } from './geofencing'
-
-export interface StateEvent {
-  bus: BusData
-  polygon: PolygonDef
-  transition: Transition
-}
+import type { BusEvaluation, StateEvent, Transition } from './types'
 
 export class StateManager {
   private state = new Map<string, boolean>()

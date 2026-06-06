@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { StateManager } from './state'
-import type { BusData, PolygonDef } from './types'
-import type { BusEvaluation } from './geofencing'
+import type { BusData, BusEvaluation, PolygonDef } from './types'
 
 describe('StateManager', () => {
   const polygon: PolygonDef = { name: 'Sarijadi', coords: [] }

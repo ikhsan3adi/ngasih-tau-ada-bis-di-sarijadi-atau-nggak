@@ -7,6 +7,7 @@ import {
   formatUpMessage,
   sendTelegram,
 } from './notifier'
+import { startHealthServer } from './server'
 import { StateManager } from './state'
 import type { PolygonDef } from './types'
 
@@ -100,20 +101,7 @@ process.on('SIGTERM', () => {
 
 log('[System] Memulai BEMO Geofencing & Tracker Bot...')
 
-if (!process.argv.includes('-1')) {
-  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000
-  Bun.serve({
-    port,
-    fetch(req) {
-      const url = new URL(req.url)
-      if (url.pathname === '/health' || url.pathname === '/') {
-        return new Response('OK', { status: 200 })
-      }
-      return new Response('Not Found', { status: 404 })
-    },
-  })
-  log(`[System] HTTP server listening on port ${port}`)
-}
+startHealthServer(log)
 
 while (true) {
   const start = Date.now()

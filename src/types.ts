@@ -65,3 +65,15 @@ export interface RawTmbBus {
   satellite: number
   gsm_signal: number
 }
+
+export interface StateEvent {
+  bus: BusData
+  polygon: PolygonDef
+  transition: Transition
+}
+
+export interface BusEvaluation {
+  bus: BusData
+  inside: boolean
+  polygon: PolygonDef
+}

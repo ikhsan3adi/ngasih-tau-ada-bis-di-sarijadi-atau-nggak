@@ -1,0 +1,27 @@
+name: Wake up Render Web Service
+
+on:
+  schedule:
+    # 21:16 UTC adalah pukul 04:16 WIB (WIB = UTC+7)
+    # Dijalankan lebih awal untuk mengantisipasi antrean/delay trigger cron di GitHub Actions.
+    - cron: '16 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  wakeup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render until awake
+        env:
+          RENDER_APP_URL: ${{ vars.RENDER_APP_URL }}
+        run: |
+          TARGET_URL="${RENDER_APP_URL}"
+
+          echo "Memulai ping ke: $TARGET_URL"
+
+          curl --fail --connect-timeout 15 --retry 15 --retry-delay 15 --retry-max-time 300 "$TARGET_URL" || {
+            echo "Render gagal dibangunin setelah 5 menit percobaan."
+            exit 0
+          }
+
+          echo "Render berhasil dibangunin dan merespon OK!"

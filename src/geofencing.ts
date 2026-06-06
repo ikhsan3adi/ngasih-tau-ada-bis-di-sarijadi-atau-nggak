@@ -1,12 +1,6 @@
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point, polygon } from '@turf/helpers'
-import type { BusData, PolygonDef } from './types'
-
-export interface BusEvaluation {
-  bus: BusData
-  inside: boolean
-  polygon: PolygonDef
-}
+import type { BusData, BusEvaluation, PolygonDef } from './types'
 
 export function evaluateBuses(
   buses: BusData[],
