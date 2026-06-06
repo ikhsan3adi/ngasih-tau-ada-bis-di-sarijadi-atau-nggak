@@ -1,6 +1,7 @@
 # Ngasih Tau Ada Bis di Sarijadi Atau Nggak
 
 ![Cron job status](https://api.cron-job.org/jobs/7747227/eee7b6edbe2c4079/status-7.svg)
+![Cron job status](https://api.cron-job.org/jobs/7747232/5ff65282b08e9755/status-7.svg)
 
 Skrip kurang kerjaan buat mantau posisi bis dan spam notif Telegram pas ada bis yang masuk atau keluar area geofence. 
 
