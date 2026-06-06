@@ -16,7 +16,7 @@ let isServerDown = false
 let lastResetDay = new Date().getDate()
 
 function log(msg: string): void {
-  const wibTime = new Date().toLocaleString('en-US', {
+  const wibTime = new Date().toLocaleString('ja-JP', {
     timeZone: 'Asia/Jakarta',
     hour12: false,
   })

@@ -38,12 +38,12 @@ export function formatPolygonConsolidatedMessage(
   const lines = [
     `🚌 <b>[INFO BIS]</b>`,
     `Waktu: <code>${wibTime} WIB</code>`,
-    `Transisi Wilayah: <code>${escapeHtml(polygonName)}</code>\n`,
+    `Transisi Wilayah: <code>${escapeHtml(polygonName)}</code>`,
   ]
 
   if (enters.length > 0) {
     lines.push(
-      `↙️ <b>Memasuki Wilayah <code>${escapeHtml(polygonName)}</code>:</b>`,
+      `\n↙️ <b>Memasuki Wilayah <code>${escapeHtml(polygonName)}</code>:</b>`,
     )
     lines.push(...enters)
   }
