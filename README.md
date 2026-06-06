@@ -14,12 +14,14 @@ Latar belakangnya gini: Gua bikin ini murni karena capek jadi korban ghosting bi
 - Nyepam chat Telegram pake plat nomor, rute, arah, dan timestamp biar kelihatan kayak anak IT beneran.
 - Pake `turf.js` buat kalkulasi matematika yang lu aja waktu sekolah pada bolos.
 - Nyimpen state bis sebelumnya biar nggak spam mulu pas bisnya lagi diem di dalem poligon. 
+- **Visualizer Real-time Map:** Dashboard peta live interaktif berbasis React + Vite + Tailwind CSS v4 + Leaflet untuk memantau pergerakan bis secara visual langsung di browser.
 
 ## Modal Biar Bisa Jalan
 
 - Bun (kalo masih pake Node.js lu kurang edgy).
 - Token Bot Telegram (bikin sendiri di BotFather, jangan manja).
 - Chat ID Telegram (buat nampung spam).
+- Akun Cloudflare gratisan (buat CORS Proxy).
 
 ## Environment Variables
 
@@ -70,6 +72,8 @@ Jalanin test suite biar kelihatan nerapin TDD padahal copas sana sini:
 bun test
 ```
 
+---
+
 ## Deployment ke Render (Biar jalan gratisan tapi hemat kuota)
 
 Daripada bayar $7 per bulan buat background worker, mending kita deploy sebagai **Web Service** gratisan di Render. Biar Render kaga rewel minta port binding, aplikasi ini udah otomatis ngebuka server HTTP di port `3000` (atau port dinamis dari Render lewat env `PORT`) dengan endpoint health check di `/health` atau `/`.
@@ -98,4 +102,90 @@ Setelah Render dipastikan bangun oleh GitHub Actions, pinger dari `cron-job.org`
      - Jadwal Cron: `*/5 5-18 * * *`
 4. Di luar jam itu (pukul 19:00 - 04:15 WIB), pinger bakal libur nembak. Setelah 15 menit tanpa request (sekitar pukul 19:15 WIB), kontainer Render lu bakal otomatis tidur nyenyak demi menghemat kuota jam gratisan Render lu.
 
+---
 
+## Visualizer Peta Live (GitHub Pages Ready)
+
+Biar makin lengkap, ada visualizer peta web interaktif di dalam folder `/visualizer`. Visualizer ini bakal nge-render rute bis secara realtime (update tiap 10s) dan mendeteksi geofence secara visual di browser.
+
+### Mengatasi CORS Error di Browser (Pake Cloudflare Workers)
+Karena API UPTD Bandung kaga ngasih header CORS, browser lu bakal ngeblokir request langsung (CORS blocked error). AllOrigins/CORS proxy publik lainnya sering lambat dan diblokir Cloudflare bemo. 
+
+Solusinya kita pake **Cloudflare Workers** sebagai reverse proxy yang super ngebut dan gratis (0ms cold start):
+
+1. Daftar/masuk ke [dash.cloudflare.com](https://dash.cloudflare.com/).
+2. Buat Worker baru (misal namanya `bemo-proxy`).
+3. Klik **Edit Code** dan paste script proxy JavaScript ini:
+   ```javascript
+    export default {
+      async fetch(request) {
+        const corsHeaders = {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        };
+
+        // Handle preflight request browser
+        if (request.method === "OPTIONS") {
+          return new Response(null, { headers: corsHeaders });
+        }
+
+        const url = new URL(request.url);
+        let targetUrl = "";
+
+        if (url.pathname === "/api/live") {
+          targetUrl = "https://bemo.uptangkutan-bandung.id/map/live";
+        } else if (url.pathname === "/api/tmb") {
+          targetUrl = "https://bemo.uptangkutan-bandung.id/map/tmb/";
+        } else {
+          return new Response("Not Found", { status: 404, headers: corsHeaders });
+        }
+
+        try {
+          const response = await fetch(targetUrl, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          });
+          
+          const data = await response.text();
+          return new Response(data, {
+            status: response.status,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+            }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ error: err.message }), {
+            status: 502,
+            headers: corsHeaders
+          });
+        }
+      }
+    }
+   ```
+4. Klik **Save and Deploy**. Salin URL Worker lu (misal: `https://bemo-proxy.username.workers.dev/`).
+
+### Deploy Visualizer ke GitHub Pages Otomatis
+Repositori ini udah dilengkapi workflow GitHub Actions `.github/workflows/gh-pages.yml` yang bakal otomatis nge-build dan deploy visualizer ke branch `gh-pages` tiap kali lu push ke branch `master`.
+
+1. Masuk ke **Settings** repositori GitHub lu -> **Secrets and variables** -> **Actions** -> tab **Variables**.
+2. Klik **New repository variable**.
+3. Beri nama **`BEMO_PROXY_URL`** dan isikan **URL Cloudflare Worker** lu tadi sebagai nilainya.
+4. Lakukan push/commit kode ke GitHub branch `master`. GitHub Actions bakal nge-build visualizer dan menyuntikkan URL Worker lu secara otomatis saat build-time.
+5. Buka tab **Settings** repositori lu -> **Pages** -> ganti Source ke Deploy from a branch dan pilih branch `gh-pages`.
+6. Web visualizer lu bakal live di `https://username.github.io/ngasih-tau-ada-bis-di-sarijadi-atau-nggak/`.
+
+### Menjalankan Visualizer di Lokal
+Untuk development atau sekadar ngetes visualizer di laptop sendiri (Vite dev server bakal otomatis nge-proxy API bemo tanpa kena CORS):
+
+```bash
+# Menjalankan Vite Dev Server visualizer (jalan di localhost:3000)
+bun run visualize
+
+# Mem-build berkas produksi visualizer secara lokal
+bun run build:visualizer
+```
+
+---

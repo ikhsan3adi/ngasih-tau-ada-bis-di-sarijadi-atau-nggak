@@ -37,6 +37,8 @@ jobs:
         run: cd visualizer && bun install
 
       - name: Build Visualizer
+        env:
+          VITE_BEMO_API_URL: ${{ vars.BEMO_PROXY_URL }}
         run: bun run build:visualizer
 
       - name: Deploy

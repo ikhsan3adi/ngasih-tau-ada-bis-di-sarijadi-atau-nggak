@@ -21,6 +21,8 @@ import {
 } from '../../src/routes'
 import polygonsTest from '../../test-polygons.json'
 
+const API_URL = import.meta.env.VITE_BEMO_API_URL || ''
+
 interface BusData {
   key: string
   plate: string
@@ -183,10 +185,7 @@ export default function App() {
     return null
   }
 
-  const fetchBusData = async (
-    localPath: string,
-    fullUrl: string,
-  ): Promise<any> => {
+  const fetchBusData = async (localPath: string): Promise<any> => {
     const isLocalDev =
       window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1'
@@ -196,25 +195,27 @@ export default function App() {
         const res = await fetch(localPath)
         if (res.ok) return await res.json()
       } catch (e) {
+        console.warn(`Local proxy dev failed for ${localPath}`, e)
+      }
+    }
+
+    if (API_URL) {
+      try {
+        const cleanUrl = API_URL.replace(/\/$/, '')
+        const res = await fetch(`${cleanUrl}${localPath}`)
+        if (res.ok) return await res.json()
+      } catch (e) {
         console.warn(
-          `Local proxy dev failed for ${localPath}, falling back to CORS proxies`,
+          `Fetch via custom API URL failed: ${API_URL}${localPath}`,
           e,
         )
       }
     }
 
-    try {
-      const corsProxyUrl = `https://corsproxy.io/?${encodeURIComponent(fullUrl)}`
-      const res = await fetch(corsProxyUrl)
-      if (res.ok) {
-        return await res.json()
-      }
-    } catch (e) {
-      console.warn(
-        `corsproxy.io failed for ${fullUrl}, falling back to allorigins`,
-        e,
-      )
-    }
+    const fullUrl =
+      localPath === '/api/live'
+        ? 'https://bemo.uptangkutan-bandung.id/map/live'
+        : 'https://bemo.uptangkutan-bandung.id/map/tmb/'
 
     try {
       const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`
@@ -224,7 +225,7 @@ export default function App() {
         return JSON.parse(data.contents)
       }
     } catch (e) {
-      console.error(`All CORS proxies failed to fetch ${fullUrl}`, e)
+      console.error(`All Fallback proxies failed to fetch ${fullUrl}`, e)
     }
 
     return null
@@ -234,14 +235,8 @@ export default function App() {
     setIsLoading(true)
     try {
       const [liveRes, tmbRes] = await Promise.all([
-        fetchBusData(
-          '/api/live',
-          'https://bemo.uptangkutan-bandung.id/map/live',
-        ),
-        fetchBusData(
-          '/api/tmb',
-          'https://bemo.uptangkutan-bandung.id/map/tmb/',
-        ),
+        fetchBusData('/api/live'),
+        fetchBusData('/api/tmb'),
       ])
 
       if (!liveRes && !tmbRes) {
