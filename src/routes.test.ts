@@ -27,7 +27,8 @@ describe('Routes Domain Module', () => {
       expect(enrichRoute('FEEDER 1')).toBe(
         'FEEDER 1 | Stasiun Hall - Gunung Batu',
       )
-      expect(enrichRoute('BANDROS')).toBe('BANDROS') // not in map, return original
+      expect(enrichRoute('BANDROS')).toBe('BANDROS | Bandung Tour on Bus')
+      expect(enrichRoute('BOSEH')).toBe('BOSEH') // not in map, return original
       expect(enrichRoute(null)).toBe('Unknown Route')
     })
   })
