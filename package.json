@@ -5,9 +5,10 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
-    "visualize": "bun run src/visualizer/server.ts"
+    "format": "prettier --write \"src\" \"visualizer\"",
+    "format:check": "prettier --check \"src\" \"visualizer\"",
+    "visualize": "cd visualizer && bun run dev",
+    "build:visualizer": "cd visualizer && bun run build"
   },
   "dependencies": {
     "@turf/boolean-point-in-polygon": "^7.3.5"

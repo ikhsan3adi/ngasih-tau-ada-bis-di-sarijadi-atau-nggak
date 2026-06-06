@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+/* Leaflet Map Height & Base Style */
+#map {
+  width: 100%;
+  height: 100%;
+  background-color: #0b0f19;
+}
+
+/* Custom Div Icon for Bus Marker */
+.custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.bus-marker-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 11px;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.5),
+    0 0 0 4px rgba(255, 255, 255, 0.15);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.bus-marker-icon:hover {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.8),
+    0 0 0 6px rgba(255, 255, 255, 0.25);
+  z-index: 9999 !important;
+}
+
+/* Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7) !important;
+  color: #f1f5f9 !important;
+  padding: 4px !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* Geofence Polygon Tooltip */
+.polygon-tooltip {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0.9 !important;
+}
+
+/* Scrollbar Customization for Sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
