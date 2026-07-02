@@ -3,7 +3,7 @@
 ![Cron job status](https://api.cron-job.org/jobs/7747227/eee7b6edbe2c4079/status-7.svg)
 ![Cron job status](https://api.cron-job.org/jobs/7747232/5ff65282b08e9755/status-7.svg)
 
-> [!INFO]
+> [!NOTE]
 > 
 > - **Bot (notifier):** [@sarijadibustracker_bot](https://t.me/sarijadibustracker_bot)
 > - **Live Visualizer:** <http://ikhsan3adi.is-a.dev/ngasih-tau-ada-bis-di-sarijadi-atau-nggak/>
