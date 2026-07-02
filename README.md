@@ -3,6 +3,13 @@
 ![Cron job status](https://api.cron-job.org/jobs/7747227/eee7b6edbe2c4079/status-7.svg)
 ![Cron job status](https://api.cron-job.org/jobs/7747232/5ff65282b08e9755/status-7.svg)
 
+> [!INFO]
+> 
+> - **Bot (notifier):** [@sarijadibustracker_bot](https://t.me/sarijadibustracker_bot)
+> - **Live Visualizer:** <http://ikhsan3adi.is-a.dev/ngasih-tau-ada-bis-di-sarijadi-atau-nggak/>
+> - **Bemo Proxy:** <https://young-field-2d3d.ikhsan3adi.workers.dev>
+>   - Endpoints: `/api/live` & `/api/tmb`
+
 Skrip kurang kerjaan buat mantau posisi bis dan spam notif Telegram pas ada bis yang masuk atau keluar area geofence. 
 
 Latar belakangnya gini: Gua bikin ini murni karena capek jadi korban ghosting bis pas pulang kuliah. Nungguin bis di daerah Sarijadi, Cibogo, Surya Sumantri atau Sukawarna tuh kayak nungguin kepastian dari gebetan, nggak jelas kapan datengnya. Berbekal skill reverse engineering tingkat dewa (baca: inspect element endpoint API BEMO asli), akhirnya jadilah bot ini biar server yang nungguin bis. Sekalian pamer ke circle lu lah kalo lu bisa ngoding hal-hal canggih gini.
